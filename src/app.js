@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+const { register, httpRequests, httpDuration, perfReports, safeReason, safeBuild } = require('./metrics');
 
 // Application HTTP : ingestion des rapports clients + consultation des parties en cours.
 function createApp({ fleet, log }) {
@@ -11,12 +12,20 @@ function createApp({ fleet, log }) {
     const t0 = process.hrtime.bigint();
     res.on('finish', () => {
       const durationMs = Number(process.hrtime.bigint() - t0) / 1e6;
+      const route = req.route?.path ?? 'unmatched';
+      httpRequests.inc({ method: req.method, route, status: String(res.statusCode) });
+      httpDuration.observe({ method: req.method, route }, durationMs / 1000);
       log({ ts: new Date().toISOString(), level: 'info', event: 'http_request', method: req.method, path: req.route?.path ?? req.path, status: res.statusCode, durationMs: Math.round(durationMs * 100) / 100 });
     });
     next();
   });
 
   app.get('/healthz', (req, res) => res.json({ status: 'ok' }));
+
+  app.get('/metrics', async (req, res) => {
+    res.set('Content-Type', register.contentType);
+    res.send(await register.metrics());
+  });
 
   app.get('/api/games', (req, res) => res.json(fleet ? fleet.liveGames() : []));
 
@@ -33,6 +42,7 @@ function createApp({ fleet, log }) {
     const size = JSON.stringify(body).length;
     const busy = Date.now() + Math.min(40, size / 400);
     while (Date.now() < busy) { /* travail synchrone volontaire */ }
+    perfReports.inc({ reason: safeReason(report.reason), build: safeBuild(report.build), source: 'api' });
     log({ ts: new Date().toISOString(), level: 'warn', event: 'perf_spike', source: 'ingest', report, server: body.server });
     return res.status(202).json({ accepted: report.id });
   });
