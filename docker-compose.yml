@@ -46,7 +46,21 @@ services:
       - "3100:3100"
     restart: unless-stopped
 
+  alloy:
+    image: grafana/alloy:v1.10.0
+    command: ["run", "--server.http.listen-addr=0.0.0.0:12345", "--storage.path=/var/lib/alloy/data", "/etc/alloy/config.alloy"]
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - app-logs:/var/log/app:ro
+      - alloy-data:/var/lib/alloy/data
+    ports:
+      - "12345:12345"
+    depends_on:
+      - loki
+    restart: unless-stopped
+
 volumes:
   app-logs:
   prometheus-data:
   loki-data:
+  alloy-data:

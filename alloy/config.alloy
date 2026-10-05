@@ -1,0 +1,47 @@
+
+local.file_match "live" {
+  path_targets = [{
+    __path__ = "/var/log/app/*.log",
+    service  = "game-telemetry",
+    origin   = "live",
+  }]
+}
+
+loki.source.file "live" {
+  targets    = local.file_match.live.targets
+  forward_to = [loki.process.telemetry.receiver]
+}
+
+loki.process "telemetry" {
+  stage.json {
+    expressions = {
+      ts    = "ts",
+      level = "level",
+      event = "event",
+    }
+  }
+
+  stage.timestamp {
+    source = "ts"
+    format = "RFC3339"
+  }
+
+  stage.labels {
+    values = {
+      level = "",
+      event = "",
+    }
+  }
+
+  stage.label_drop {
+    values = ["filename"]
+  }
+
+  forward_to = [loki.write.local.receiver]
+}
+
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
