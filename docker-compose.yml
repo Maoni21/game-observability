@@ -20,6 +20,18 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  export:
+    build: .
+    image: game-telemetry:local
+    command: ["node", "scripts/parse-export.js"]
+    environment:
+      EXPORT_IN: /app/data/admin-export-2026-09-20_26.log
+      EXPORT_OUT: /app/export/export.jsonl
+    volumes:
+      - ./data:/app/data:ro
+      - export-data:/app/export
+    restart: "no"
+
   prometheus:
     image: prom/prometheus:v3.5.0
     command:
@@ -52,13 +64,14 @@ services:
     volumes:
       - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
       - app-logs:/var/log/app:ro
+      - export-data:/var/log/export:ro
       - alloy-data:/var/lib/alloy/data
     ports:
       - "12345:12345"
     depends_on:
       - loki
     restart: unless-stopped
-  
+
   grafana:
     image: grafana/grafana:12.1.0
     environment:
@@ -81,3 +94,4 @@ volumes:
   loki-data:
   alloy-data:
   grafana-data:
+  export-data:

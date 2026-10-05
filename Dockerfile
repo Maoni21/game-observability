@@ -11,8 +11,8 @@ COPY package.json ./
 COPY src ./src
 COPY scripts ./scripts
 RUN chmod -R a+rX /app \
- && mkdir -p /app/logs \
- && chown node:node /app/logs
+ && mkdir -p /app/logs /app/export \
+ && chown node:node /app/logs /app/export
 USER node
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \

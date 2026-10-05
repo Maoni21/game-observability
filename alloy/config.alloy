@@ -1,4 +1,3 @@
-
 local.file_match "live" {
   path_targets = [{
     __path__ = "/var/log/app/*.log",
@@ -9,6 +8,19 @@ local.file_match "live" {
 
 loki.source.file "live" {
   targets    = local.file_match.live.targets
+  forward_to = [loki.process.telemetry.receiver]
+}
+
+local.file_match "export" {
+  path_targets = [{
+    __path__ = "/var/log/export/*.jsonl",
+    service  = "game-telemetry",
+    origin   = "export",
+  }]
+}
+
+loki.source.file "export" {
+  targets    = local.file_match.export.targets
   forward_to = [loki.process.telemetry.receiver]
 }
 
