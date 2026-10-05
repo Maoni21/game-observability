@@ -1,0 +1,42 @@
+groups:
+  - name: game-telemetry-detections
+    interval: 1m
+    rules:
+      - alert: RegressionOverlay
+        expr: |
+          (
+            sum by (build) (count_over_time({service="game-telemetry", event="perf_spike"} | json build="report.build", o="report.work.details.renderOverlay" | o > 100 [15m]))
+            /
+            sum by (build) (count_over_time({service="game-telemetry", event="perf_spike"} | json build="report.build" [15m]))
+          ) > 0.10
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Saccades overlay anormales sur le build {{ $labels.build }}"
+          description: "{{ $value | humanizePercentage }} des rapports de saccades de ce build viennent du rendu de l'overlay (normal : moins de 1 %)."
+
+      - alert: FarmingSuspecte
+        expr: |
+          (
+            sum(count_over_time({service="game-telemetry", event="game_completed"} |~ `"score":\s*\[3,\s*0\]` | json map="server.map" | map="vault" [1h]))
+            /
+            sum(count_over_time({service="game-telemetry", event="game_completed"} [1h]))
+          ) > 0.25
+          and
+          sum(count_over_time({service="game-telemetry", event="game_completed"} |~ `"score":\s*\[3,\s*0\]` | json map="server.map" | map="vault" [1h])) > 5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Rafale de victoires 3-0 sur vault"
+          description: "{{ $value | humanizePercentage }} des parties terminées sur la dernière heure sont des 3-0 sur vault (normal : environ 3 %)."
+
+      - alert: RapportsFalsifies
+        expr: |
+          sum by (client) (count_over_time({service="game-telemetry", event="perf_spike"} | json fps="report.fps", render="report.work.stages.render" | fps > 240 or render < 0 | regexp `"id":\s*"P-(?P<client>[0-9a-f]{8})` [1h])) >= 3
+        labels:
+          severity: warning
+        annotations:
+          summary: "Le client {{ $labels.client }} envoie des rapports impossibles"
+          description: "{{ $value }} rapports avec fps > 240 ou temps de rendu négatif sur la dernière heure."
