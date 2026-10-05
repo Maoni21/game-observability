@@ -1,0 +1,24 @@
+services:
+  app:
+    build: .
+    image: game-telemetry:local
+    ports:
+      - "8080:8080"
+    environment:
+      LOG_FILE: /app/logs/telemetry.log
+    volumes:
+      - app-logs:/app/logs
+    restart: unless-stopped
+
+  loadgen:
+    build: .
+    image: game-telemetry:local
+    command: ["node", "scripts/loadgen.js", "--rps", "5", "--burst-every", "120", "--burst-rps", "80"]
+    network_mode: "service:app"
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  app-logs:
