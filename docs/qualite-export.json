@@ -1,0 +1,101 @@
+{
+  "lines": 264345,
+  "blocks": 2944,
+  "blocksByKind": {
+    "Game completed": 796,
+    "Performance spike": 2148
+  },
+  "strayLines": 0,
+  "invalidJson": 0,
+  "duplicates": 55,
+  "conflictingDuplicates": 0,
+  "outOfOrder": 2,
+  "offsetHours": 2,
+  "events": 2889,
+  "firstEvent": "2026-09-19T22:31:37.000Z",
+  "lastEvent": "2026-09-26T22:04:13.000Z",
+  "eventsPerDay": {
+    "2026-09-19": 19,
+    "2026-09-20": 397,
+    "2026-09-21": 334,
+    "2026-09-22": 345,
+    "2026-09-23": 426,
+    "2026-09-24": 414,
+    "2026-09-25": 502,
+    "2026-09-26": 452
+  },
+  "gapsOver60min": [
+    {
+      "from": "2026-09-20T02:40:58.000Z",
+      "to": "2026-09-20T03:41:57.000Z",
+      "minutes": 61
+    },
+    {
+      "from": "2026-09-20T23:35:06.000Z",
+      "to": "2026-09-21T00:36:27.000Z",
+      "minutes": 61
+    },
+    {
+      "from": "2026-09-21T01:27:10.000Z",
+      "to": "2026-09-21T02:51:25.000Z",
+      "minutes": 84
+    },
+    {
+      "from": "2026-09-21T03:10:53.000Z",
+      "to": "2026-09-21T04:29:45.000Z",
+      "minutes": 79
+    },
+    {
+      "from": "2026-09-22T00:42:37.000Z",
+      "to": "2026-09-22T01:46:08.000Z",
+      "minutes": 64
+    },
+    {
+      "from": "2026-09-22T03:23:12.000Z",
+      "to": "2026-09-22T04:23:18.000Z",
+      "minutes": 60
+    },
+    {
+      "from": "2026-09-22T11:59:23.000Z",
+      "to": "2026-09-22T14:14:34.000Z",
+      "minutes": 135
+    },
+    {
+      "from": "2026-09-23T03:19:49.000Z",
+      "to": "2026-09-23T04:36:38.000Z",
+      "minutes": 77
+    },
+    {
+      "from": "2026-09-24T00:27:39.000Z",
+      "to": "2026-09-24T01:34:56.000Z",
+      "minutes": 67
+    },
+    {
+      "from": "2026-09-25T23:34:33.000Z",
+      "to": "2026-09-26T00:41:29.000Z",
+      "minutes": 67
+    }
+  ],
+  "reportVersions": {
+    "1": 2085,
+    "2": 25
+  },
+  "reportsByBuild": {
+    "beta-20260919-2": 641,
+    "beta-20260922-1": 625,
+    "beta-20260924-3": 648,
+    "beta-20260926-5": 171,
+    "beta-20260926-6": 25
+  },
+  "reportsByReason": {
+    "frame": 2018,
+    "network": 92
+  },
+  "suspicious": {
+    "negativeStage": 70,
+    "fpsAbove240": 48,
+    "workAboveFrame": 70
+  },
+  "quarantinedGames": 17
+}
+/Users/imrane/Desktop/game-observability/export/export.jsonl existe déjà, rien à écrire (--force pour régénérer)
