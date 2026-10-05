@@ -54,7 +54,7 @@ function observeFleet(fleet) {
 
   fleet.on('log', (e) => {
     if (e.event === 'game_completed') {
-      gamesCompleted.inc({ map: safeMap(e.map ?? e.game?.map) });
+      gamesCompleted.inc({ map: safeMap(e.server?.map) });
     }
     if (e.event === 'perf_spike' && e.source !== 'ingest') {
       perfReports.inc({
