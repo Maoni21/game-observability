@@ -1,0 +1,38 @@
+groups:
+  - name: game-telemetry-alertes
+    rules:
+      - alert: ServiceIndisponible
+        expr: up{job="game-telemetry"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Le service de télémétrie ne répond plus"
+          description: "Prometheus n'arrive plus à lire /metrics depuis 1 minute."
+
+      - alert: TauxErreursApiEleve
+        expr: job:http_errors:ratio5m{route="/api/reports"} > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Plus de 5 % d'erreurs serveur sur /api/reports"
+          description: "Taux d'erreurs 5xx : {{ $value | humanizePercentage }}."
+
+      - alert: LatenceApiElevee
+        expr: job:http_request_duration_seconds:p95_5m{route="/api/reports"} > 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "p95 de /api/reports au-dessus de 100 ms"
+          description: "p95 actuel : {{ $value | humanizeDuration }}."
+
+      - alert: BuildsInvalidesRecus
+        expr: sum(rate(perf_reports_total{build="invalid"}[10m])) > 0
+        for: 5m
+        labels:
+          severity: info
+        annotations:
+          summary: "Des rapports arrivent avec un build inconnu"
+          description: "Un client envoie des rapports avec un numéro de version mal formé : client modifié ou rapports forgés."
