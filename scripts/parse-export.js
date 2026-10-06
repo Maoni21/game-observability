@@ -2,6 +2,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { classify } = require('../src/classify');
 
 const HEADER = /^(Performance spike|Game completed) (\S+) · (\d{1,2})\/(\d{1,2})\/(\d{4}), (\d{1,2}):(\d{2}):(\d{2}) (AM|PM)$/;
 const HOUR = 3_600_000;
@@ -76,7 +77,7 @@ function parseExport(text) {
     seen.set(key, raw);
     const ts = new Date(b.local - offsetHours * HOUR).toISOString();
     events.push(isSpike
-      ? { ts, level: 'warn', event: 'perf_spike', report: b.data.report, server: b.data.server }
+      ? { ts, level: 'warn', event: 'perf_spike', category: classify(b.data.report), report: b.data.report, server: b.data.server }
       : { ts, level: 'info', event: 'game_completed', server: b.data });
   }
 
@@ -114,6 +115,7 @@ function parseExport(text) {
     reportVersions: count(spikes, (e) => e.report.version),
     reportsByBuild: count(spikes, (e) => e.report.build),
     reportsByReason: count(spikes, (e) => e.report.reason),
+    reportsByCategory: count(spikes, (e) => e.category),
     suspicious: {
       negativeStage: spikes.filter((e) => Object.values(e.report.work?.stages ?? {}).some((v) => v < 0)).length,
       fpsAbove240: spikes.filter((e) => e.report.fps > 240).length,
