@@ -314,7 +314,7 @@
       "id": 7,
       "type": "timeseries",
       "title": "Les joueurs subissent-ils des pics de latence réseau ?",
-      "description": "p95 du RTT (rttMs) des rapports, par heure. Les pics correspondent aux incidents de tick des serveurs.",
+      "description": "p95 du RTT des rapports, par heure. Le champ est report.rttMs en version 1 et report.network.rttMs en version 2 : les deux sont lus. Les pics correspondent aux incidents de tick des serveurs.",
       "gridPos": {
         "x": 0,
         "y": 25,
@@ -332,7 +332,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "quantile_over_time(0.95, {service=\"game-telemetry\", origin=\"$origin\", event=\"perf_spike\"} | json rtt=\"report.rttMs\" | unwrap rtt [1h]) by (origin)",
+          "expr": "quantile_over_time(0.95, {service=\"game-telemetry\", origin=\"$origin\", event=\"perf_spike\"} | json v1=\"report.rttMs\", v2=\"report.network.rttMs\" | label_format rtt=`{{ if .v1 }}{{ .v1 }}{{ else }}{{ .v2 }}{{ end }}` | unwrap rtt [1h]) by (origin)",
           "legendFormat": "p95 RTT",
           "queryType": "range"
         }
