@@ -91,6 +91,15 @@
     "frame": 2018,
     "network": 92
   },
+  "reportsByCategory": {
+    "rendu": 1049,
+    "reseau": 92,
+    "shader": 459,
+    "onglet-cache": 158,
+    "overlay": 262,
+    "monde": 20,
+    "falsifie": 70
+  },
   "suspicious": {
     "negativeStage": 70,
     "fpsAbove240": 48,
@@ -98,4 +107,3 @@
   },
   "quarantinedGames": 17
 }
-/Users/imrane/Desktop/game-observability/export/export.jsonl existe déjà, rien à écrire (--force pour régénérer)
