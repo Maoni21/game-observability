@@ -69,7 +69,7 @@ Interprétation : des parties ont lieu juste avant et juste après, donc il s'ag
 | Étape de rendu au temps négatif | 70 | `sum(count_over_time({service="game-telemetry", origin="export", event="perf_spike"} \| json render="report.work.stages.render" \| render < 0 [$__range]))` |
 | fps supérieurs à 240 (les autres rapports ne dépassent jamais 144) | 48, tous parmi les 70 précédents | `... \| json fps="report.fps" \| fps > 240 [$__range]` |
 | Temps de travail supérieur à la durée de l'image (`work.totalMs > frameMs`) | 70, exactement les mêmes rapports | `workAboveFrame` dans `qualite-export.json` |
-| Client unique derrière ces 70 rapports | `5e1f0c7a` | `sum by (client) (count_over_time({service="game-telemetry", origin="export", event="perf_spike"} \| json category \| category="falsifie" \| regexp `"id":\s*"P-(?P<client>[0-9a-f]{8})` [$__range]))` |
+| Client unique derrière ces 70 rapports | `5e1f0c7a` | `` sum by (client) (count_over_time({service="game-telemetry", origin="export", event="perf_spike"} \| json category \| category="falsifie" \| regexp `"id":\s*"P-(?P<client>[0-9a-f]{8})` [$__range])) `` |
 | Parties mises en quarantaine par le serveur | 17 | `sum(count_over_time({service="game-telemetry", origin="export", event="game_completed"} \| json q="server.quarantined" \| q="true" [$__range]))` |
 
 Traitement : ces rapports ne sont **pas supprimés**, pour qu'on puisse toujours les détecter. Ils sont classés `falsifie` par `src/classify.js` et exclus des analyses de performance.
