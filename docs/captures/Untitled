@@ -1,1 +1,0 @@
-sum by (width, bloom) (count_over_time({origin="export", event="perf_spike"} | json o="report.work.details.renderOverlay", width="report.graphics.width", bloom="report.graphics.bloom" | o > 100 [30d]))
