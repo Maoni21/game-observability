@@ -1,0 +1,379 @@
+{
+  "uid": "perf-joueur",
+  "title": "2. Performance côté joueur",
+  "description": "Pourquoi les joueurs ont-ils des saccades depuis jeudi soir, et qui est touché ?",
+  "tags": [
+    "game-telemetry"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 41,
+  "version": 1,
+  "editable": false,
+  "time": {
+    "from": "2026-09-19T20:00:00.000Z",
+    "to": "2026-09-27T00:00:00.000Z"
+  },
+  "refresh": "",
+  "panels": [
+    {
+      "id": 1,
+      "type": "piechart",
+      "title": "Quelles sont les causes des saccades ?",
+      "description": "Classification automatique de chaque rapport (src/classify.js) sur la période affichée.",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 8,
+        "h": 9
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "sum by (category) (count_over_time({service=\"game-telemetry\", origin=\"$origin\", event=\"perf_spike\"} | json category [$__range]))",
+          "legendFormat": "{{category}}",
+          "queryType": "instant"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "pieType": "donut",
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "reduceOptions": {
+          "values": true,
+          "calcs": [],
+          "fields": ""
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Quand les saccades augmentent-elles, et pour quelle cause ?",
+      "description": "Nombre de rapports par heure, par catégorie. L'overlay apparaît le jeudi 24 au soir.",
+      "gridPos": {
+        "x": 8,
+        "y": 0,
+        "w": 16,
+        "h": 9
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "sum by (category) (count_over_time({service=\"game-telemetry\", origin=\"$origin\", event=\"perf_spike\"} | json category [1h]))",
+          "legendFormat": "{{category}}",
+          "queryType": "range"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "stacking": {
+              "mode": "normal"
+            },
+            "fillOpacity": 80
+          }
+        },
+        "overrides": []
+      },
+      "interval": "1h"
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Quel build provoque des saccades dues à l'overlay ?",
+      "description": "Rapports avec renderOverlay > 100 ms, par build et par heure. Presque nul avant beta-20260924-3.",
+      "gridPos": {
+        "x": 0,
+        "y": 9,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "sum by (build) (count_over_time({service=\"game-telemetry\", origin=\"$origin\", event=\"perf_spike\"} | json build=\"report.build\", o=\"report.work.details.renderOverlay\" | o > 100 [1h]))",
+          "legendFormat": "{{build}}",
+          "queryType": "range"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "stacking": {
+              "mode": "normal"
+            },
+            "fillOpacity": 80
+          }
+        },
+        "overrides": []
+      },
+      "interval": "1h"
+    },
+    {
+      "id": 4,
+      "type": "table",
+      "title": "Quelle part des rapports de chaque build vient de l'overlay ?",
+      "description": "Ratio overlay / total par build sur la période. Seuil d'alerte RegressionOverlay : 10 %.",
+      "gridPos": {
+        "x": 12,
+        "y": 9,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "sum by (build) (count_over_time({service=\"game-telemetry\", origin=\"$origin\", event=\"perf_spike\"} | json build=\"report.build\", o=\"report.work.details.renderOverlay\" | o > 100 [$__range])) / sum by (build) (count_over_time({service=\"game-telemetry\", origin=\"$origin\", event=\"perf_spike\"} | json build=\"report.build\" [$__range]))",
+          "legendFormat": "{{build}}",
+          "queryType": "instant"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "custom": {
+            "cellOptions": {
+              "type": "color-text"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0.1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": [
+          {
+            "displayName": "Part overlay",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "Value #A": "Part overlay"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "table",
+      "title": "Quels écrans sont touchés par les saccades overlay ?",
+      "description": "Largeur d'écran et bloom des clients qui envoient des rapports overlay : la population touchée.",
+      "gridPos": {
+        "x": 0,
+        "y": 17,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "sum by (width, bloom) (count_over_time({service=\"game-telemetry\", origin=\"$origin\", event=\"perf_spike\"} | json o=\"report.work.details.renderOverlay\", width=\"report.graphics.width\", bloom=\"report.graphics.bloom\" | o > 100 [$__range]))",
+          "legendFormat": "",
+          "queryType": "instant"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": [
+          {
+            "displayName": "Rapports overlay",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "Value #A": "Rapports overlay"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Combien de temps dure une image saccadée, par build ?",
+      "description": "p95 de frameMs par build et par heure, onglets cachés exclus (ils mesurent le temps passé hors du jeu, pas une saccade).",
+      "gridPos": {
+        "x": 12,
+        "y": 17,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "quantile_over_time(0.95, {service=\"game-telemetry\", origin=\"$origin\", event=\"perf_spike\"} != \"visibilityHidden\" | json build=\"report.build\", f=\"report.frameMs\" | unwrap f [1h]) by (build)",
+          "legendFormat": "{{build}}",
+          "queryType": "range"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "interval": "1h"
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Les joueurs subissent-ils des pics de latence réseau ?",
+      "description": "p95 du RTT (rttMs) des rapports, par heure. Les pics correspondent aux incidents de tick des serveurs.",
+      "gridPos": {
+        "x": 0,
+        "y": 25,
+        "w": 24,
+        "h": 7
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "quantile_over_time(0.95, {service=\"game-telemetry\", origin=\"$origin\", event=\"perf_spike\"} | json rtt=\"report.rttMs\" | unwrap rtt [1h]) by (origin)",
+          "legendFormat": "p95 RTT",
+          "queryType": "range"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "interval": "1h"
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "origin",
+        "label": "Source",
+        "type": "custom",
+        "query": "export,live",
+        "current": {
+          "text": "export",
+          "value": "export"
+        },
+        "options": [
+          {
+            "text": "export",
+            "value": "export",
+            "selected": true
+          },
+          {
+            "text": "live",
+            "value": "live",
+            "selected": false
+          }
+        ],
+        "description": "export = données du 19 au 27 septembre, live = service en direct (passer la période sur Last 1 hour)"
+      }
+    ]
+  },
+  "annotations": {
+    "list": []
+  }
+}
