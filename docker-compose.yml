@@ -53,8 +53,8 @@ services:
     command: ["-config.file=/etc/loki/config.yml"]
     volumes:
       - ./loki/loki-config.yml:/etc/loki/config.yml:ro
+      - ./loki/rules:/etc/loki/rules:ro
       - loki-data:/loki
-      - ./loki/rules:/loki/rules:ro
     ports:
       - "3100:3100"
     restart: unless-stopped
