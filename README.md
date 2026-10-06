@@ -1,41 +1,63 @@
-# game-telemetry-demo
+# game-observability
 
-Service de télémétrie d'un jeu de tir multijoueur web (parties 1 à 2 joueurs contre bots).
+Observabilité et détection de comportements sur un jeu multijoueur web.
 
-## Lancer
+Le projet répond à deux questions :
+
+- Pourquoi des joueurs ont des saccades depuis jeudi soir, et qui est touché ?
+- Est-ce que quelqu'un abuse du jeu ?
+
+Les réponses sont dans [`docs/postmortem.md`](docs/postmortem.md).
+
+## Lancer le projet
+
+Il faut Docker et Docker Compose.
+
+```bash
+git clone https://github.com/Maoni21/game-observability.git
+cd game-observability
+docker compose up -d --build
+```
+
+Cette commande lance le service du jeu, le générateur de charge, le traitement de l'export, Prometheus, Loki, Alloy et Grafana.
+
+Au premier lancement, attendre 2 minutes puis lancer :
+
+```bash
+curl -X POST localhost:3100/flush
+```
+
+Pour tout arrêter : `docker compose down`. Pour tout remettre à zéro : `docker compose down -v`.
+
+## Adresses
+
+- Grafana : http://localhost:3000, puis Dashboards → Game telemetry
+- Prometheus : http://localhost:9090
+- Service du jeu : http://localhost:8080/healthz
+
+## Dashboards
+
+- **Santé du service** : le service fonctionne-t-il bien ?
+- **Performance côté joueur** : pourquoi des saccades, et qui est touché ?
+- **Activité de jeu et intégrité des parties** : quelqu'un abuse-t-il du jeu ?
+
+Les dashboards 2 et 3 s'ouvrent sur la semaine de l'export. Le menu **Source** permet de passer sur les données en direct.
+
+## Tests
 
 ```bash
 npm ci
-npm start                  # API sur :8080, logs JSON lines dans logs/telemetry.log et stdout
 npm test
 npm run lint
-npm run loadgen -- --rps 5 --burst-every 120 --burst-rps 80
 ```
 
-Variables d'environnement : `PORT`, `LOG_FILE`, `LOG_STDOUT` (0 pour couper stdout), `BUILD`, `GAMES_PER_MINUTE`, `SPEED`, `INCIDENTS` (0 pour désactiver).
+La CI GitHub Actions lance le lint, les tests, construit l'image Docker, l'analyse avec Trivy et la publie sur `ghcr.io`.
 
-## API
+## Documentation
 
-| méthode | route | rôle |
-|---|---|---|
-| GET | `/healthz` | santé |
-| GET | `/api/games` | parties en cours |
-| POST | `/api/reports` | ingestion d'un rapport client `{ report, server }` |
-
-## Logs en direct
-
-Une ligne JSON par événement : `startup`, `game_created`, `game_completed`, `perf_spike`, `http_request`, `http_error`.
-
-## Extrait historique
-
-`data/admin-export-2026-09-20_26.log` : export brut de la console d'administration (production, 7 jours). Format texte multi-lignes, un en-tête lisible suivi d'un bloc JSON :
-
-```
-Performance spike <serverId> · <date locale>
-<reason> · <frameMs>ms <reason>
-{ "report": {...}, "server": {...} }
-
-Game completed <serverId> · <date locale>
-<map> · <score>
-{ ...état final du serveur... }
-```
+- [`docs/qualite.md`](docs/qualite.md) : qualité des données de l'export
+- [`docs/metriques.md`](docs/metriques.md) : métriques exposées par le service
+- [`docs/metriques-vs-logs.md`](docs/metriques-vs-logs.md) : ce qui va dans les métriques et ce qui va dans les logs
+- [`docs/enquete.md`](docs/enquete.md) : types de rapports et comportements anormaux
+- [`docs/alertes.md`](docs/alertes.md) : règles d'alerte et seuils
+- [`docs/postmortem.md`](docs/postmortem.md) : rapport d'incident
